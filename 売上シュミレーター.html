@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美容師 売上シミュレーター (高機能版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', 'Inter', sans-serif;
+        }
+        /* 入力フィールドの矢印を非表示にする */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <div class="min-h-screen p-4 sm:p-8">
+        <div class="max-w-5xl mx-auto">
+            <!-- ヘッダー -->
+            <header class="text-center mb-8">
+                <h1 class="text-3xl sm:text-4xl font-bold text-slate-800">美容師 売上シミュレーター (高機能版)</h1>
+                <p class="text-slate-600 mt-2">より詳細な条件で、3ヶ月後と6ヶ月後の売上と報酬を予測します。</p>
+            </header>
+
+            <!-- メインコンテンツ -->
+            <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- 入力セクション -->
+                <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg h-fit">
+                    <h2 class="text-xl font-semibold text-slate-700 border-b pb-3 mb-4">シミュレーション条件</h2>
+                    <div id="simulation-form" class="space-y-4">
+                        
+                        <!-- 顧客・売上情報 -->
+                        <div>
+                            <h3 class="text-lg font-medium text-slate-600 mb-3">顧客・売上情報</h3>
+                            <div class="space-y-3">
+                                <div class="input-group">
+                                    <label for="avgSpendNew" class="text-sm font-medium text-slate-500">新規客の客単価 (円)</label>
+                                    <input type="number" id="avgSpendNew" value="7500" class="w-full mt-1 p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition">
+                                </div>
+                                <div class="input-group">
+                                    <label for="avgSpendRepeat" class="text-sm font-medium text-slate-500">再来客の客単価 (円)</label>
+                                    <input type="number" id="avgSpendRepeat" value="8500" class="w-full mt-1 p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition">
+                                </div>
+                                <div class="input-group">
+                                    <label for="initialNewCustomers" class="text-sm font-medium text-slate-500">初期の月間新規客数 (人)</label>
+                                    <input type="number" id="initialNewCustomers" value="20" class="w-full mt-1 p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition">
+                                </div>
+                                <div class="input-group">
+                                    <label for="initialRepeatCustomers" class="text-sm font-medium text-slate-500">初期の月間再来客数 (人)</label>
+                                    <input type="number" id="initialRepeatCustomers" value="80" class="w-full mt-1 p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition">
+                                </div>
+                                 <div class="input-group">
+                                    <label for="avgProductSales" class="text-sm font-medium text-slate-500">月間平均店販売上 (円)</label>
+                                    <input type="number" id="avgProductSales" value="50000" class="w-full mt-1 p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 成長・変動率 -->
+                        <div>
+                            <h3 class="text-lg font-medium text-slate-600 mt-6 mb-3">成長・変動率</h3>
+                             <div class="space-y-3">
+                                <div class="input-group">
+                                    <label for="newCustomerGrowthRate" class="text-sm font-medium text-slate-500 flex items-center">新規客数の月間増減率 (%) <span class="tooltip ml-1.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-circle text-slate-400" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.064.293.006.399.287.47l.45.082.082-.38-.45-.083a.297.297 0 0 1-.288-.469l.738-3.468a.297.297 0 0 1 .288-.469zM8 4.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg><span class="tooltiptext">マーケティング活動などによる新規客数の前月比での増減率。例: 2%なら毎月2%ずつ新規客が増加。</span></span></label>
+                                    <input type="number" id="newCustomerGrowthRate" value="0" class="w-full mt-1 p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- リピート率・歩合率 -->
+                        <div>
+                            <h3 class="text-lg font-medium text-slate-600 mt-6 mb-3">リピート率・歩合率</h3>
+                            <div class="space-y-3">
+                                <div class="input-group">
+                                    <label for="newRepeatRate" class="text-sm font-medium text-slate-500">新規リピート率 (%)</label>
+                                    <input type="number" id="newRepeatRate" value="40" class="w-full mt-1 p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition">
+                                </div>
+                                <div class="input-group">
+                                    <label for="existingRepeatRate" class="text-sm font-medium text-slate-500">再来リピート率 (%)</label>
+                                    <input type="number" id="existingRepeatRate" value="85" class="w-full mt-1 p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition">
+                                </div>
+                                <div class="input-group">
+                                    <label for="nominationRate" class="text-sm font-medium text-slate-500">指名率 (%)</label>
+                                    <input type="number" id="nominationRate" value="70" class="w-full mt-1 p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition">
+                                </div>
+                                <div class="input-group">
+                                    <label for="nominatedCommission" class="text-sm font-medium text-slate-500">指名売上 歩合率 (%)</label>
+                                    <input type="number" id="nominatedCommission" value="10" class="w-full mt-1 p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition">
+                                </div>
+                                <div class="input-group">
+                                    <label for="freeCommission" class="text-sm font-medium text-slate-500">フリー売上 歩合率 (%)</label>
+                                    <input type="number" id="freeCommission" value="5" class="w-full mt-1 p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition">
+                                </div>
+                                <div class="input-group">
+                                    <label for="productCommission" class="text-sm font-medium text-slate-500">店販売上 歩合率 (%)</label>
+                                    <input type="number" id="productCommission" value="15" class="w-full mt-1 p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button id="calculateBtn" class="w-full bg-cyan-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-cyan-600 active:bg-cyan-700 transition-colors duration-300 mt-6 shadow-md hover:shadow-lg">
+                            シミュレーション開始
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 結果セクション -->
+                <div class="lg:col-span-2 space-y-8">
+                    <!-- 3ヶ月後の結果 -->
+                    <div id="result3Container" class="bg-white p-6 rounded-xl shadow-lg opacity-40 transition-opacity duration-500">
+                        <h2 class="text-2xl font-semibold text-slate-700 border-b pb-3 mb-4">3ヶ月後の予測</h2>
+                        <div id="result3Content">
+                            <p class="text-slate-500 text-center py-8">左のフォームに入力してシミュレーションを開始してください。</p>
+                        </div>
+                    </div>
+                    <!-- 6ヶ月後の結果 -->
+                    <div id="result6Container" class="bg-white p-6 rounded-xl shadow-lg opacity-40 transition-opacity duration-500">
+                        <h2 class="text-2xl font-semibold text-slate-700 border-b pb-3 mb-4">6ヶ月後の予測</h2>
+                         <div id="result6Content">
+                            <p class="text-slate-500 text-center py-8">左のフォームに入力してシミュレーションを開始してください。</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const calculateBtn = document.getElementById('calculateBtn');
+
+    // 結果表示用のテンプレート
+    const createResultHTML = (idPrefix) => `
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <div class="bg-slate-100 p-4 rounded-lg text-center">
+                <p class="text-sm text-slate-500">総売上</p>
+                <p class="text-2xl font-bold text-cyan-600"><span id="totalSales${idPrefix}">-</span> 円</p>
+            </div>
+            <div class="bg-slate-100 p-4 rounded-lg text-center">
+                <p class="text-sm text-slate-500">報酬</p>
+                <p class="text-2xl font-bold text-green-600"><span id="totalReward${idPrefix}">-</span> 円</p>
+            </div>
+        </div>
+        <h3 class="text-xl font-semibold text-slate-700 mb-3">売上明細</h3>
+        <ul class="space-y-2 text-slate-600">
+            <li class="flex justify-between items-center border-b py-2"><span>新規客数</span><span class="font-mono"><span id="newCustomers${idPrefix}">-</span> 人</span></li>
+            <li class="flex justify-between items-center border-b py-2"><span>再来客数</span><span class="font-mono"><span id="repeatCustomers${idPrefix}">-</span> 人</span></li>
+            <li class="flex justify-between items-center border-b py-2"><span>技術売上</span><span class="font-mono"><span id="techSales${idPrefix}">-</span> 円</span></li>
+            <li class="flex justify-between items-center border-b py-2"><span>指名売上</span><span class="font-mono"><span id="nominatedSales${idPrefix}">-</span> 円</span></li>
+            <li class="flex justify-between items-center border-b py-2"><span>店販売上</span><span class="font-mono"><span id="productSales${idPrefix}">-</span> 円</span></li>
+        </ul>
+    `;
+
+    // 数値を読みやすくフォーマットする関数
+    const formatNumber = (num) => num.toLocaleString();
+
+    // 月ごとの計算を行う関数
+    const calculateMonthMetrics = (params, newCustomers, repeatCustomers) => {
+        const newCustomerSales = newCustomers * params.avgSpendNew;
+        const repeatCustomerSales = repeatCustomers * params.avgSpendRepeat;
+        const techSales = newCustomerSales + repeatCustomerSales;
+
+        const productSales = params.avgProductSales;
+        const totalSales = techSales + productSales;
+
+        const nominatedSales = techSales * (params.nominationRate / 100);
+        const freeSales = techSales * (1 - params.nominationRate / 100);
+
+        const nominatedReward = nominatedSales * (params.nominatedCommission / 100);
+        const freeReward = freeSales * (params.freeCommission / 100);
+        const productReward = productSales * (params.productCommission / 100);
+        const totalReward = nominatedReward + freeReward + productReward;
+
+        return {
+            totalSales: Math.round(totalSales),
+            totalReward: Math.round(totalReward),
+            newCustomers: Math.round(newCustomers),
+            repeatCustomers: Math.round(repeatCustomers),
+            techSales: Math.round(techSales),
+            nominatedSales: Math.round(nominatedSales),
+            productSales: Math.round(productSales),
+        };
+    };
+
+    // シミュレーションを実行するメインの関数
+    const runSimulation = () => {
+        // 1. フォームから全ての値を取得
+        const params = {
+            avgSpendNew: parseFloat(document.getElementById('avgSpendNew').value) || 0,
+            avgSpendRepeat: parseFloat(document.getElementById('avgSpendRepeat').value) || 0,
+            initialNewCustomers: parseFloat(document.getElementById('initialNewCustomers').value) || 0,
+            initialRepeatCustomers: parseFloat(document.getElementById('initialRepeatCustomers').value) || 0,
+            newCustomerGrowthRate: parseFloat(document.getElementById('newCustomerGrowthRate').value) || 0,
+            newRepeatRate: parseFloat(document.getElementById('newRepeatRate').value) || 0,
+            existingRepeatRate: parseFloat(document.getElementById('existingRepeatRate').value) || 0,
+            nominationRate: parseFloat(document.getElementById('nominationRate').value) || 0,
+            nominatedCommission: parseFloat(document.getElementById('nominatedCommission').value) || 0,
+            freeCommission: parseFloat(document.getElementById('freeCommission').value) || 0,
+            avgProductSales: parseFloat(document.getElementById('avgProductSales').value) || 0,
+            productCommission: parseFloat(document.getElementById('productCommission').value) || 0,
+        };
+
+        // 2. シミュレーションの初期値を設定
+        let currentNew = params.initialNewCustomers;
+        let currentRepeat = params.initialRepeatCustomers;
+        const simulationResults = {};
+
+        // 3. 6ヶ月間ループで月ごとに計算
+        for (let i = 1; i <= 6; i++) {
+            // 3ヶ月後と6ヶ月後の時点での数値を計算して保存
+            if (i === 3 || i === 6) {
+                simulationResults[i] = calculateMonthMetrics(params, currentNew, currentRepeat);
+            }
+
+            // 次の月の顧客数を計算
+            // a. 次の月の再来客数を計算 (既存客からのリピート + 新規からのリピート)
+            const nextMonthRepeat = (currentRepeat * (params.existingRepeatRate / 100)) + (currentNew * (params.newRepeatRate / 100));
+            // b. 次の月の新規客数を計算 (増減率を適用)
+            const nextMonthNew = currentNew * (1 + params.newCustomerGrowthRate / 100);
+            
+            // c. 現在の顧客数を次の月の予測値に更新
+            currentNew = nextMonthNew;
+            currentRepeat = nextMonthRepeat;
+        }
+
+        // 4. 結果をDOMに反映
+        updateResultView(3, simulationResults[3]);
+        updateResultView(6, simulationResults[6]);
+    };
+
+    // 結果表示を更新する関数
+    const updateResultView = (month, data) => {
+        const container = document.getElementById(`result${month}Container`);
+        const content = document.getElementById(`result${month}Content`);
+        
+        content.innerHTML = createResultHTML(month);
+
+        document.getElementById(`totalSales${month}`).textContent = formatNumber(data.totalSales);
+        document.getElementById(`totalReward${month}`).textContent = formatNumber(data.totalReward);
+        document.getElementById(`newCustomers${month}`).textContent = formatNumber(data.newCustomers);
+        document.getElementById(`repeatCustomers${month}`).textContent = formatNumber(data.repeatCustomers);
+        document.getElementById(`techSales${month}`).textContent = formatNumber(data.techSales);
+        document.getElementById(`nominatedSales${month}`).textContent = formatNumber(data.nominatedSales);
+        document.getElementById(`productSales${month}`).textContent = formatNumber(data.productSales);
+        
+        container.style.opacity = '1';
+    };
+
+    calculateBtn.addEventListener('click', runSimulation);
+});
+</script>
+
+</body>
+</html>
